@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace LibraryManagment.Data.Interfaces
 {
-    interface ICustomerRepository : IRepository<Customer>
+   public interface ICustomerRepository : IRepository<Customer>
     {
 
     }
