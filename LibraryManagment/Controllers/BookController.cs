@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using LibraryManagment.Data.Interfaces;
 using LibraryManagment.Data.Model;
+using LibraryManagment.ViewModel;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryManagment.Controllers
@@ -18,6 +19,7 @@ namespace LibraryManagment.Controllers
             _bookRepository = bookRepository;
             _authorRepository = authorRepository;
         }
+        [Route("Book")]
         public IActionResult List(int? authorId, int? borrowerId)
         {
             if (authorId == null && borrowerId == null)
@@ -30,10 +32,11 @@ namespace LibraryManagment.Controllers
             {
                 var author = _authorRepository.GetWithBooks((int)authorId);
 
-                if(author.Books.Count() == 0)
+                if (author.Books.Count() == 0)
                 {
                     return View("AuthorEmpty", author);
-                }else
+                }
+                else
                 {
                     return View(author.Books);
                 }
@@ -52,7 +55,7 @@ namespace LibraryManagment.Controllers
         }
         public IActionResult CheckBooks(IEnumerable<Book> books)
         {
-            if(books.Count() == 0)
+            if (books.Count() == 0)
             {
                 return View("Empty");
             }
@@ -60,6 +63,56 @@ namespace LibraryManagment.Controllers
             {
                 return View(books);
             }
+        }
+
+        public IActionResult Create()
+        {
+            var bookVM = new BookViewModel()
+            {
+                Authors = _authorRepository.GetAll()
+            };
+            return View(bookVM);
+        }
+
+        [HttpPost]
+        public IActionResult Create(BookViewModel bookViewModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                bookViewModel.Authors = _authorRepository.GetAll();
+                return View(bookViewModel);
+            }
+            _bookRepository.Create(bookViewModel.Book);
+
+            return RedirectToAction("List");
+        }
+
+        public IActionResult Update(int id)
+        {
+            var bookVM = new BookViewModel()
+            {
+                Book = _bookRepository.GetById(id),
+                Authors = _authorRepository.GetAll()
+            };
+            return View(bookVM);
+        }
+        [HttpPost]
+        public IActionResult Update(BookViewModel bookViewModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                bookViewModel.Authors = _authorRepository.GetAll();
+                return View(bookViewModel);
+            }
+            _bookRepository.Update(bookViewModel.Book);
+            return RedirectToAction("List");
+        }
+        public IActionResult Delete(int id)
+        {
+            var book = _bookRepository.GetById(id);
+            _bookRepository.Delete(book);
+
+            return RedirectToAction("List");
         }
     }
 }
